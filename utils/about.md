@@ -6,7 +6,7 @@ This module is a 2 step wrapper to upload AOI to Google Earth Engine
 
 If your file is not yet available in your SEAPL folders, you can upload it using the first menu. 
 
-![import](./doc/img/import.png)
+![import](https://raw.githubusercontent.com/openforis/import_to_gee/master/doc/img/import.png)
 
 ### step 2 
 
@@ -22,5 +22,5 @@ Once you have selected your aoi, click the btn and your AOI will be updated as a
 
 If the process is successful, your AOI will be display in green on the map. 
 
-![image](./doc/img/results.png)
+![image](https://raw.githubusercontent.com/openforis/import_to_gee/master/doc/img/results.png)
 
