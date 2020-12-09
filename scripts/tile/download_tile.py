@@ -20,7 +20,7 @@ class DownloadTile(sw.Tile):
     
     def __init__(self):
         
-        self.output = sw.Alert().add_msg('import your file')
+        self.output = sw.Alert()#.add_msg('import your file')
         
         self.btn = sw.Btn('import', icon = 'mdi-check', class_='mt-4')
         
@@ -36,7 +36,7 @@ class DownloadTile(sw.Tile):
         
         super().__init__(
             'aoi_widget',
-            "Import a file",
+            "Upload to Sepal",
             btn = self.btn,
             inputs = [self.select_type, self.input_file],
             output = self.output

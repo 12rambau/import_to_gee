@@ -54,7 +54,7 @@ class LinkDialog(sw.SepalWidget, v.Dialog):
         if self.aoi_tile.output.type == 'success':
         
             self.value = True,
-            self.link.v_model = self.aoi_tile.io.assetId
+            self.link.v_model = self.aoi_tile.io.assetId.replace('projects/earthengine-legacy/assets/', '')
             
         return
         
