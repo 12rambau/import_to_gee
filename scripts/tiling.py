@@ -7,7 +7,7 @@ from shapely.ops import unary_union
 from itertools import product
 import geopandas as gpd
 
-def set_grid(aoi, grid_size):
+def set_grid(aoi, grid_size, grid_batch):
     """compute a grid around a given aoi (ee.FeatureCollection)"""
     
     #extract bounds from ee_object 
@@ -32,10 +32,16 @@ def set_grid(aoi, grid_size):
     
     #create the grid 
     points = []
-    for coords in product(longitudes, latitudes):
+    batch = []
+    for i, coords in enumerate(product(longitudes, latitudes)):
+        
+        # create grid geometry 
         points.append(Point(coords[0], coords[1]))
+        
+        # add a batch number 
+        batch.append(int(i/grid_batch))
     
-    grid = gpd.GeoDataFrame({'geometry':points}) \
+    grid = gpd.GeoDataFrame({'batch': batch, 'geometry':points}) \
         .buffer(buffer_size) \
         .envelope \
         .intersection(aoi_shp)

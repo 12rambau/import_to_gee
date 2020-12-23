@@ -73,13 +73,17 @@ class TileTile(sw.Tile):
         aoi = self.aoi_io 
         grid_size = self.size_select.v_model
         grid_name = self.grid_name.v_model
+        grid_batch = self.batch_size.v_model
         
         #check the vars 
         if not self.output.check_input(aoi.get_aoi_name(), ms.no_aoi): return widget.toggle_loading()
         if not self.output.check_input(grid_size, ms.no_size): return widget.toggle_loading()
+        if not self.output.check_input(grid_batch, ms.no_size): return widget.toggle_loading()
         if not self.output.check_input(grid_name, ms.no_name): return widget.toggle_loading()
         
-        grid = set_grid(aoi.get_aoi_ee(), grid_size)
+        grid = set_grid(aoi.get_aoi_ee(), grid_size, grid_batch)
+        
+        if not grid: return widget.toggle_loading()
         
         # get exportation parameters 
         folder = ee.data.getAssetRoots()[0]['id']
