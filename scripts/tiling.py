@@ -10,21 +10,19 @@ import geopandas as gpd
 def set_grid(aoi, grid_size, grid_batch):
     """compute a grid around a given aoi (ee.FeatureCollection)"""
     
-    #extract bounds from ee_object 
-    ee_bounds = aoi.geometry().bounds().coordinates()
-    coords = ee_bounds.get(0).getInfo()
-    ll, ur = coords[0], coords[2]
-
-    # Get the bounding box
-    min_lon, min_lat, max_lon, max_lat = ll[0], ll[1], ur[0], ur[1]
-    
-    #get the shape of the aoi 
+    # get the shape of the aoi in mercator proj 
     aoi_json = geemap.ee_to_geojson(aoi)
     aoi_shp = unary_union([shape(feat['geometry']) for feat in aoi_json['features']])
+    aoi_gdf = gpd.GeoDataFrame({'geometry': [aoi_shp]}, crs="EPSG:4326").to_crs('EPSG:3857')
     
-    # we use the equator approximation (.01 deg = 1.11 km)
-    # the grid will be latlong squares (not in km)
-    buffer_size = grid_size * (.01/1.11)
+    # extract the aoi shape in mercator projection 
+    aoi_shp_proj = aoi_gdf['geometry'][0]
+    
+    # extract bounds from gdf 
+    min_lon, min_lat, max_lon, max_lat = aoi_gdf.total_bounds
+
+    # mercator is in metter so we change unit
+    buffer_size = grid_size * 1000
     
     # compute the longitudes and latitudes top left corner coordinates
     longitudes = np.arange(min_lon, max_lon, buffer_size)
@@ -41,10 +39,12 @@ def set_grid(aoi, grid_size, grid_batch):
         # add a batch number 
         batch.append(int(i/grid_batch))
     
-    grid = gpd.GeoDataFrame({'batch': batch, 'geometry':points}) \
+    # create a buffer grid in lat-long
+    grid = gpd.GeoDataFrame({'batch': batch, 'geometry':points}, crs='EPSG:3857') \
         .buffer(buffer_size) \
         .envelope \
-        .intersection(aoi_shp)
+        .intersection(aoi_shp_proj) \
+        .to_crs('EPSG:4326')
     
     # filter empty geometries
     grid = grid[np.invert(grid.is_empty)]
