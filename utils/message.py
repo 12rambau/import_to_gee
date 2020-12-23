@@ -1,1 +1,1 @@
-asset_created = "the grid have been exported to GEE under the  name : {}" 
+asset_created = "The grid have been exported to GEE under the  name : {}" 

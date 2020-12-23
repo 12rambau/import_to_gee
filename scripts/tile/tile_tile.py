@@ -98,7 +98,11 @@ class TileTile(sw.Tile):
         self.assetId = asset
         
         #display the asset on the map 
-        self.m.addLayer(ee.FeatureCollection(asset), {'color': 'red'}, 'grid')
+        self.m.addLayer(
+            ee.FeatureCollection(asset), 
+            {'color': v.theme.themes.dark.accent}, 
+            'grid'
+        )
         
         display_asset(self.output, asset)
         
