@@ -61,6 +61,8 @@ class TileTile(sw.Tile):
         
         # link the component together 
         self.btn.on_event('click', self.create_grid)
+        self.batch_size.observe(self.write_name, 'v_model')
+        self.size_select.observe(self.write_name, 'v_model')
         
     def create_grid(self, widget, data, event):
         
@@ -111,5 +113,15 @@ class TileTile(sw.Tile):
         
         return
         
+    def write_name(self, change):
         
+        # read the inputs 
+        aoi_name = self.aoi_io.get_aoi_name()
+        grid_size = self.size_select.v_model
+        grid_batch = self.batch_size.v_model
         
+        name = f'{aoi_name}_Grid_{grid_size}x{grid_size}_batch_{grid_batch}' if aoi_name else None
+        
+        self.grid_name.v_model = name
+        
+        return
