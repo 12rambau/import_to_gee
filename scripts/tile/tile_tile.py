@@ -73,9 +73,9 @@ class TileTile(sw.Tile):
         grid_name = self.grid_name.v_model
         
         #check the vars 
-        if not self.output.check_input(aoi.get_aoi_name(), msg=None): return widget.toggle_loading()
-        if not self.output.check_input(grid_size, msg=None): return widget.toggle_loading()
-        if not self.output.check_input(grid_name, msg=None): return widget.toggle_loading()
+        if not self.output.check_input(aoi.get_aoi_name(), ms.no_aoi): return widget.toggle_loading()
+        if not self.output.check_input(grid_size, ms.no_size): return widget.toggle_loading()
+        if not self.output.check_input(grid_name, ms.no_name): return widget.toggle_loading()
         
         grid = set_grid(aoi.get_aoi_ee(), grid_size)
         
