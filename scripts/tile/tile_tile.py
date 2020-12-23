@@ -84,21 +84,21 @@ class TileTile(sw.Tile):
         asset = os.path.join(folder, grid_name)
         
         # export
-        # check that the asset does not exist
-        task_config = {
-            'collection': grid, 
-            'description':grid_name,
-            'assetId': asset
-        }
+        if not isAsset(grid_name, folder):
+            task_config = {
+                'collection': grid, 
+                'description':grid_name,
+                'assetId': asset
+            }
     
-        task = ee.batch.Export.table.toAsset(**task_config)
-        task.start()
-        gee.wait_for_completion(grid_name, self.output)
+            task = ee.batch.Export.table.toAsset(**task_config)
+            task.start()
+            gee.wait_for_completion(grid_name, self.output)
         
         self.assetId = asset
         
         #display the asset on the map 
-        self.m.addLayer(ee.FeatureCollection(asset), {color: 'red'}, 'grid')
+        self.m.addLayer(ee.FeatureCollection(asset), {'color': 'red'}, 'grid')
         
         display_asset(self.output, asset)
         
