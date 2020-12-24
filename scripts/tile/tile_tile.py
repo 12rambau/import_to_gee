@@ -77,7 +77,7 @@ class TileTile(sw.Tile):
         
         
         try:
-            grid = set_grid(aoi.get_aoi_ee(), grid_size, grid_batch)
+            grid = set_grid(aoi.get_aoi_ee(), grid_size, grid_batch, self.output)
             
             # get exportation parameters 
             folder = ee.data.getAssetRoots()[0]['id']
