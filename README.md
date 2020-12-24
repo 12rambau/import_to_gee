@@ -1,4 +1,4 @@
-# import_to_gee
+# File transfer management
 
 ## About 
 This module is a 2 step wrapper to upload AOI to Google Earth Engine
