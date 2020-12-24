@@ -75,37 +75,40 @@ class TileTile(sw.Tile):
         if not self.output.check_input(grid_batch, ms.no_size): return widget.toggle_loading()
         if not self.output.check_input(grid_name, ms.no_name): return widget.toggle_loading()
         
-        grid = set_grid(aoi.get_aoi_ee(), grid_size, grid_batch)
         
-        if not grid: return widget.toggle_loading()
+        try:
+            grid = set_grid(aoi.get_aoi_ee(), grid_size, grid_batch)
+            
+            # get exportation parameters 
+            folder = ee.data.getAssetRoots()[0]['id']
+            asset = os.path.join(folder, grid_name)
         
-        # get exportation parameters 
-        folder = ee.data.getAssetRoots()[0]['id']
-        asset = os.path.join(folder, grid_name)
-        
-        # export
-        if not isAsset(grid_name, folder):
-            task_config = {
-                'collection': grid, 
-                'description':grid_name,
-                'assetId': asset
-            }
+            # export
+            if not isAsset(grid_name, folder):
+                task_config = {
+                    'collection': grid, 
+                    'description':grid_name,
+                    'assetId': asset
+                }
     
-            task = ee.batch.Export.table.toAsset(**task_config)
-            task.start()
-            gee.wait_for_completion(grid_name, self.output)
+                task = ee.batch.Export.table.toAsset(**task_config)
+                task.start()
+                gee.wait_for_completion(grid_name, self.output)
         
-        self.assetId = asset
+            self.assetId = asset
         
-        #display the asset on the map 
-        self.m.addLayer(
-            ee.FeatureCollection(asset), 
-            {'color': v.theme.themes.dark.accent}, 
-            'grid'
-        )
+            #display the asset on the map 
+            self.m.addLayer(
+                ee.FeatureCollection(asset), 
+                {'color': v.theme.themes.dark.accent}, 
+                'grid'
+            )
         
-        display_asset(self.output, asset)
-        
+            display_asset(self.output, asset)
+            
+        except Exception as e: 
+            self.output.add_live_msg(str(e), 'error') 
+            
         # toggle the loading
         widget.toggle_loading()
         
