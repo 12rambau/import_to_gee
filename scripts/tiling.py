@@ -59,6 +59,23 @@ def set_grid(aoi, grid_size, grid_batch, output):
     output.add_live_msg('Grid build completed', 'success')
     
     return geemap.geojson_to_ee(json_df)
+
+def preview_square(geometry, grid_size):
+    
+    # get the center of the aoi
+    center = geometry.centroid().getInfo()['coordinates']
+    
+    # create the square 
+    square = gpd.GeoDataFrame({'geometry': [Point(center[0], center[1])]}, crs='EPSG:4326') \
+        .to_crs('EPSG:3857') \
+        .buffer(grid_size*1000) \
+        .envelope \
+        .to_crs('EPSG:4326')
+    
+    # convert gpd to GeoJson
+    json_df = json.loads(square.to_json())
+    
+    return geemap.geojson_to_ee(json_df)
     
     
     

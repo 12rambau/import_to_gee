@@ -5,7 +5,7 @@ from sepal_ui import sepalwidgets as sw
 from sepal_ui.scripts import gee
 import ee
 
-from scripts.tiling import set_grid
+from scripts.tiling import *
 from utils.utils import *
 
 ee.Initialize()
@@ -56,6 +56,7 @@ class TileTile(sw.Tile):
         # link the component together 
         self.btn.on_event('click', self.create_grid)
         self.batch_size.observe(self.write_name, 'v_model')
+        self.size_select.observe(self.display_square, 'v_model')
         self.size_select.observe(self.write_name, 'v_model')
         
     def create_grid(self, widget, data, event):
@@ -96,8 +97,13 @@ class TileTile(sw.Tile):
                 gee.wait_for_completion(grid_name, self.output)
         
             self.assetId = asset
+            
+            # remove the preview square from the map
+            for layer in self.m.layers:
+                if layer.name == 'preview square size':
+                    self.m.remove_layer(layer)
         
-            #display the asset on the map 
+            # display the asset on the map 
             self.m.addLayer(
                 ee.FeatureCollection(asset), 
                 {'color': v.theme.themes.dark.accent}, 
@@ -126,3 +132,18 @@ class TileTile(sw.Tile):
         self.grid_name.v_model = name
         
         return
+    
+    def display_square(self, change):
+        
+        # create a preview square 
+        ee_square = preview_square(
+            self.aoi_io.get_aoi_ee().geometry(), 
+            float(self.size_select.v_model)
+        )
+        
+        # display on the map 
+        self.m.addLayer(
+            ee_square,
+            {'color': v.theme.themes.dark.info},
+            'preview square size'
+        )
