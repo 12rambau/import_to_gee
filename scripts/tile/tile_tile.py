@@ -29,22 +29,16 @@ class TileTile(sw.Tile):
             v_model = None
         )
         
-        self.size_select = v.Slider(
+        self.size_select = v.TextField(
             label = 'Select the tile size (km)',
-            min = 10,
-            max = 1000,
-            step = 10,
-            thumb_label = 'always',
-            class_ = 'mt-10',
-            v_model = None
+            v_model=None,
+            type = 'number'
         )
         
-        self.batch_size = v.Slider(
+        self.batch_size = v.TextField(
             label = 'Select number of tiles in a batch',
-            min = 1,
-            thumb_label = 'always',
-            class_ = 'mt-5',
-            v_model = None
+            v_model=None,
+            type = 'number'
         )
         
         self.btn = sw.Btn('tile the aoi', icon = 'mdi-check')
@@ -71,9 +65,9 @@ class TileTile(sw.Tile):
         
         # read the data 
         aoi = self.aoi_io 
-        grid_size = self.size_select.v_model
+        grid_size = float(self.size_select.v_model)
         grid_name = self.grid_name.v_model
-        grid_batch = self.batch_size.v_model
+        grid_batch = int(self.batch_size.v_model)
         
         #check the vars 
         if not self.output.check_input(aoi.get_aoi_name(), ms.no_aoi): return widget.toggle_loading()
@@ -121,10 +115,10 @@ class TileTile(sw.Tile):
         
         # read the inputs 
         aoi_name = self.aoi_io.get_aoi_name()
-        grid_size = self.size_select.v_model
-        grid_batch = self.batch_size.v_model
+        grid_size = float(self.size_select.v_model) if self.size_select.v_model else .0
+        grid_batch = int(self.batch_size.v_model) if self.batch_size.v_model else 0
         
-        name = f'{aoi_name}_Grid_{grid_size}x{grid_size}_batch_{grid_batch}' if aoi_name else None
+        name = f'{aoi_name}_Grid_{grid_size:.0f}x{grid_size:.0f}_batch_{grid_batch}' if aoi_name else None
         
         self.grid_name.v_model = name
         
