@@ -22,17 +22,20 @@ def set_grid(aoi, grid_batch, output):
     # extract the aoi shape 
     aoi_shp_proj = aoi_gdf['geometry'][0]
     
-    # extract bounds from gdf 
-    min_lon, min_lat, max_lon, max_lat = aoi_gdf.total_bounds
 
     # the size is based on the planet grid size 
     # the planet grid is composed of squared grid that split the world width in 2048 squares
-    # the final grid is cut at poles level so we don't care about latitudes
-    buffer_size = 360/2048
+    diametre = 360/2048
+    radius = diametre/2
     
-    # compute the longitudes and latitudes top left corner coordinates
-    longitudes = np.arange(min_lon, max_lon, buffer_size)
-    latitudes = np.arange(min_lat, max_lat, buffer_size)
+    # compute the longitudes and latitudes for the whole world
+    longitudes = np.arange(-180, 180, diametre)
+    latitudes = np.arange(-90, 90, diametre)
+    
+    # filter with the geometry bounds
+    min_lon, min_lat, max_lon, max_lat = aoi_gdf.total_bounds
+    longitudes = longitudes[(longitudes > (min_lon - radius)) & (longitudes < max_lon + radius)]
+    latitudes = latitudes[(latitudes > (min_lat - radius)) & (latitudes < max_lat + radius)]
     
     output.add_live_msg(cm.build_grid)
     
@@ -49,7 +52,7 @@ def set_grid(aoi, grid_batch, output):
     
     # create a buffer grid in lat-long
     grid = gpd.GeoDataFrame({'batch': batch, 'geometry':points}, crs='EPSG:4326') \
-        .buffer(buffer_size) \
+        .buffer(diametre) \
         .envelope \
         .intersection(aoi_shp_proj) \
     
