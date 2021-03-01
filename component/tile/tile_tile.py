@@ -5,8 +5,8 @@ from sepal_ui import sepalwidgets as sw
 from sepal_ui.scripts import gee
 import ee
 
-from scripts.tiling import *
-from utils.utils import *
+from component import scripts as cs
+from component.message import cm
 
 ee.Initialize()
 
@@ -29,15 +29,10 @@ class TileTile(sw.Tile):
             v_model = None
         )
         
-        self.size_select = v.TextField(
-            label = 'Select the tile size (km)',
-            v_model=None,
-            type = 'number'
-        )
-        
-        self.batch_size = v.TextField(
+        self.batch_size = sw.NumberField(
             label = 'Select number of tiles in a batch',
-            v_model=None,
+            v_model=1,
+            max_=100,
             type = 'number'
         )
         
@@ -49,15 +44,13 @@ class TileTile(sw.Tile):
             'tile_widget',
             'Tiling interface',
             btn = self.btn,
-            inputs = [self.size_select, self.batch_size, self.grid_name],
+            inputs = [self.batch_size, self.grid_name],
             output = self.output
         )
         
         # link the component together 
         self.btn.on_event('click', self.create_grid)
         self.batch_size.observe(self.write_name, 'v_model')
-        self.size_select.observe(self.display_square, 'v_model')
-        self.size_select.observe(self.write_name, 'v_model')
         
     def create_grid(self, widget, data, event):
         
@@ -66,26 +59,24 @@ class TileTile(sw.Tile):
         
         # read the data 
         aoi = self.aoi_io 
-        grid_size = float(self.size_select.v_model)
         grid_name = self.grid_name.v_model
         grid_batch = int(self.batch_size.v_model)
         
         #check the vars 
-        if not self.output.check_input(aoi.get_aoi_name(), ms.no_aoi): return widget.toggle_loading()
-        if not self.output.check_input(grid_size, ms.no_size): return widget.toggle_loading()
-        if not self.output.check_input(grid_batch, ms.no_size): return widget.toggle_loading()
-        if not self.output.check_input(grid_name, ms.no_name): return widget.toggle_loading()
+        if not self.output.check_input(aoi.get_aoi_name(), cm.no_aoi): return widget.toggle_loading()
+        if not self.output.check_input(grid_batch, cm.no_size): return widget.toggle_loading()
+        if not self.output.check_input(grid_name, cm.no_name): return widget.toggle_loading()
         
         
         try:
-            grid = set_grid(aoi.get_aoi_ee(), grid_size, grid_batch, self.output)
+            grid = cs.set_grid(aoi.get_aoi_ee(), grid_batch, self.output)
             
             # get exportation parameters 
             folder = ee.data.getAssetRoots()[0]['id']
             asset = os.path.join(folder, grid_name)
         
             # export
-            if not isAsset(grid_name, folder):
+            if not cs.isAsset(grid_name, folder):
                 task_config = {
                     'collection': grid, 
                     'description':grid_name,
@@ -110,7 +101,7 @@ class TileTile(sw.Tile):
                 'grid'
             )
         
-            display_asset(self.output, asset)
+            cs.display_asset(self.output, asset)
             
         except Exception as e: 
             self.output.add_live_msg(str(e), 'error') 
@@ -124,26 +115,10 @@ class TileTile(sw.Tile):
         
         # read the inputs 
         aoi_name = self.aoi_io.get_aoi_name()
-        grid_size = float(self.size_select.v_model) if self.size_select.v_model else .0
         grid_batch = int(self.batch_size.v_model) if self.batch_size.v_model else 0
         
-        name = f'{aoi_name}_Grid_{grid_size:.0f}x{grid_size:.0f}_batch_{grid_batch}' if aoi_name else None
+        name = f'{aoi_name}_Grid_{grid_batch}' if aoi_name else None
         
         self.grid_name.v_model = name
         
         return
-    
-    def display_square(self, change):
-        
-        # create a preview square 
-        ee_square = preview_square(
-            self.aoi_io.get_aoi_ee().geometry(), 
-            float(self.size_select.v_model)
-        )
-        
-        # display on the map 
-        self.m.addLayer(
-            ee_square,
-            {'color': v.theme.themes.dark.info},
-            'preview square size'
-        )

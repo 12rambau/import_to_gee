@@ -6,7 +6,7 @@ from ipyvuetify.extra import FileInput
 from sepal_ui import sepalwidgets as sw 
 from sepal_ui.scripts import utils as su
 
-from utils import parameter as pm
+from component import parameter as cp
 
 class DownloadTile(sw.Tile):
     
@@ -114,7 +114,7 @@ class DownloadTile(sw.Tile):
         for file in myfiles:
         
             # create a path
-            path = Path(pm.get_down_dir()).joinpath(unidecode.unidecode(file['name']))
+            path = Path(cpget_down_dir()).joinpath(unidecode.unidecode(file['name']))
     
             if path.is_file():
                 self.output.add_msg(f'File {path} already exists, skipping.', 'warning')

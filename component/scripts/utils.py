@@ -2,7 +2,7 @@ import os
 
 import ee
 
-from utils import message as ms
+from component.message import cm
 
 ee.Initialize()
 
@@ -11,7 +11,7 @@ def display_asset(output, asset):
     
     asset = asset.replace('projects/earthengine-legacy/assets/', '')
     
-    output.add_msg(ms.asset_created.format(asset), 'success')
+    output.add_msg(cm.asset_created.format(asset), 'success')
     
     return
 
