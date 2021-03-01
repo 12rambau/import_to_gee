@@ -1,6 +1,46 @@
 {
+    "app": {
+        "title": "Vector file manager",
+        "drawer_item": {
+            "file": "File transfer management",
+            "bfast_tile": "BFAST tilling",
+            "about": "About"
+        }
+    
+    },
+    "digest_aoi": "Digest the selected AOI", 
+    "build_grid": "Building Grid",
+    "grid_complete": "Grid build complete",
     "asset_created": "The grid have been exported to GEE under the  name : {}",
     "no_aoi": "No aoi have been selected",
     "no_size": "The cell size must be greater than 0",
-    "no_name": "The name must have at least 1 character"
+    "no_name": "The name must have at least 1 character",
+    "dialog": {
+        "title": "Copy this link to you clipboard",
+        "msg": "click on the link then 'ctrl+a' and then 'ctrl+c'",
+        "link_lbl": "Link"
+    },
+    "to_gee": {
+        "title": "Convert to Google Earth Engine asset"
+    },
+    "download": {
+        "import_btn": "Import",
+        "select_type": "Select table type",
+        "title": "Upload to Sepal",
+        "start": "Start the download",
+        "no_file": "No file selected",
+        "not_csv": ".csv is the only supported format for tables",
+        "naming_bug": "The different files of your shapefile should have the same name",
+        "missing_files": "The minimum import requires: {}",
+        "unknown_extention": "One of the file does not have an extention included in the ESRI shapefile description ({})",
+        "already_exist": "File {} already exists, skipping.",
+        "complete": "Download complete in {}"
+    },
+    "tile": {
+        "asset_lbl": "Asset name",
+        "nb_batch_lbl": "Select number of tiles in a batch",
+        "btn": "Tile the AOI",
+        "title": "Tiling interface",
+        "grid_layer": "grid"
+    }
 }

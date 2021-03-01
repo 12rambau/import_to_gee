@@ -25,24 +25,28 @@ class TileTile(sw.Tile):
         
         # inputs 
         self.grid_name = v.TextField(
-            label = "Asset name",
+            label = cm.tile.asset_lbl,
             v_model = None
         )
         
         self.batch_size = sw.NumberField(
-            label = 'Select number of tiles in a batch',
+            label = cm.tile.nb_batch_lbl,
             v_model=1,
             max_=100,
             type = 'number'
         )
         
-        self.btn = sw.Btn('tile the aoi', icon = 'mdi-check')
+        self.btn = sw.Btn(cm.tile.btn, icon = 'mdi-check')
+        
+        # the aoi default btn is not set to btn anymore (to avoid conflict with the standard btn)
+        # to mimic its behaviour in the dialog interface we wire 2 attribute btn and aoi_btn to the same Btn object
+        self.aoi_select_btn = self.btn
         
         self.output = sw.Alert()
         
         super().__init__(
             'tile_widget',
-            'Tiling interface',
+            cm.tile.title,
             btn = self.btn,
             inputs = [self.batch_size, self.grid_name],
             output = self.output
@@ -98,7 +102,7 @@ class TileTile(sw.Tile):
             self.m.addLayer(
                 ee.FeatureCollection(asset), 
                 {'color': v.theme.themes.dark.accent}, 
-                'grid'
+                cm.tile.grid_layer
             )
         
             cs.display_asset(self.output, asset)
