@@ -13,7 +13,7 @@ def display_asset(output, asset):
     
     output.add_msg(cm.asset_created.format(asset), 'success')
     
-    return
+    return asset
 
 def isAsset(asset_descripsion, folder):
     """Check if the asset already exist in the user asset folder

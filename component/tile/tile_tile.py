@@ -1,4 +1,5 @@
 import os
+from types import SimpleNamespace
 
 import ipyvuetify as v
 from sepal_ui import sepalwidgets as sw
@@ -38,11 +39,13 @@ class TileTile(sw.Tile):
         
         self.btn = sw.Btn(cm.tile.btn, icon = 'mdi-check')
         
+        self.output = sw.Alert()
+        
         # the aoi default btn is not set to btn anymore (to avoid conflict with the standard btn)
         # to mimic its behaviour in the dialog interface we wire 2 attribute btn and aoi_btn to the same Btn object
         self.aoi_select_btn = self.btn
-        
-        self.output = sw.Alert()
+        self.aoi_output = self.output
+        self.io = SimpleNamespace(assetId=None)
         
         super().__init__(
             'tile_widget',
@@ -105,7 +108,7 @@ class TileTile(sw.Tile):
                 cm.tile.grid_layer
             )
         
-            cs.display_asset(self.output, asset)
+            self.io.assetId = cs.display_asset(self.output, asset)
             
         except Exception as e: 
             self.output.add_live_msg(str(e), 'error') 

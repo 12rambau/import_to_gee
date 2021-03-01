@@ -7,9 +7,9 @@ from component.message import cm
 
 class LinkDialog(sw.SepalWidget, v.Dialog):
     
-    def __init__(self, tile_tile):
+    def __init__(self, tile):
         
-        self.tile_tile = tile_tile
+        self.tile = tile
         
         self.title = v.CardTitle(children=[cm.dialog.title])
         self.text = v.CardText(children = [cm.dialog.msg])
@@ -38,7 +38,7 @@ class LinkDialog(sw.SepalWidget, v.Dialog):
         )
         
         # self.link.on_event('click', self.select_all)
-        self.tile_tile.aoi_select_btn.observe(self.fire_dialog, 'loading')
+        self.tile.aoi_select_btn.observe(self.fire_dialog, 'loading')
     
     # the pyperclip method does not work with SEPAL
     #def select_all(self, widget, data, event):
@@ -53,9 +53,9 @@ class LinkDialog(sw.SepalWidget, v.Dialog):
     def fire_dialog(self, link):
         
         # the toggle btn has changed let's see if it's for a good reason
-        if self.tile_tile.output.type == 'success':
+        if self.tile.aoi_output.type == 'success':
         
             self.value = True
-            self.link.v_model = self.tile_tile.assetId.replace('projects/earthengine-legacy/assets/', '')
+            self.link.v_model = self.tile.io.assetId.replace('projects/earthengine-legacy/assets/', '')
             
         return

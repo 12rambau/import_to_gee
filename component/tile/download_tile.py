@@ -113,7 +113,7 @@ class DownloadTile(sw.Tile):
         for file in myfiles:
         
             # create a path
-            path = Path(cpget_down_dir()).joinpath(unidecode.unidecode(file['name']))
+            path = cp.down_dir.joinpath(unidecode.unidecode(file['name']))
     
             if path.is_file():
                 self.output.add_msg(cm.download.already_exist.format(path), 'warning')
