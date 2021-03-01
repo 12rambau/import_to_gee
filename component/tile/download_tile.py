@@ -6,7 +6,8 @@ from ipyvuetify.extra import FileInput
 from sepal_ui import sepalwidgets as sw 
 from sepal_ui.scripts import utils as su
 
-from utils import parameter as pm
+from component import parameter as cp
+from component.message import cm
 
 class DownloadTile(sw.Tile):
     
@@ -22,10 +23,10 @@ class DownloadTile(sw.Tile):
         
         self.output = sw.Alert()#.add_msg('import your file')
         
-        self.btn = sw.Btn('import', icon = 'mdi-check', class_='mt-4')
+        self.btn = sw.Btn(cm.download.import_btn, icon = 'mdi-check', class_='mt-4')
         
         self.select_type = v.Select(
-            label='Select table type', 
+            label= cm.download.select_type, 
             items= self.SELECT_TYPE,
             v_model = None,
         )
@@ -36,7 +37,7 @@ class DownloadTile(sw.Tile):
         
         super().__init__(
             'aoi_widget',
-            "Upload to Sepal",
+            cm.download.title,
             btn = self.btn,
             inputs = [self.select_type, self.input_file],
             output = self.output
@@ -67,15 +68,13 @@ class DownloadTile(sw.Tile):
         # toggle the btn
         widget.toggle_loading()
     
-        self.output.add_msg('start the downlaod')
+        self.output.add_msg(cm.download.start)
     
         # load the files
         myfiles = self.input_file.get_files()
     
         # test that the file is not empty 
-        if not len(myfiles):
-            self.output.add_msg('No file selected', 'error')
-            return widget.toggle_loading()
+        if not self.output.check_input(myfiles, cm.download.no_file): return widget.toggle_loading()
         
         ####################################
         ##      test the file sended      ##
@@ -85,7 +84,7 @@ class DownloadTile(sw.Tile):
         if self.select_type.v_model == self.SELECT_TYPE[1]:
             
             if Path(myfiles[0]['name']).suffix != '.csv':
-                self.output.add_msg('.csv is the only supported format for tables', 'error')
+                self.output.add_msg(cm.download.not_csv, 'error')
                 return widget.toggle_loading()
             
         # shp type
@@ -95,16 +94,16 @@ class DownloadTile(sw.Tile):
             
             name = set([Path(f['name']).stem for f in myfiles])
             if len(name) > 1:
-                self.output.add_msg('the different file of your shapefile should have the same name', 'error')
+                self.output.add_msg(cm.download.naming_bug, 'error')
                 return widget.toggle_loading()
             
             suffixes = [Path(f['name']).suffix for f in myfiles]
             if not all(ext in suffixes  for ext in self.SHP_SUFFIX[:3]):
-                self.output.add_msg(f'The mimnimum import requires ({", ".join(self.SHP_SUFFIX[:3])})', 'error')
+                self.output.add_msg(cm.download.missing_files.format(", ".join(self.SHP_SUFFIX[:3])), 'error')
                 return widget.toggle_loading()
             
             if not all(ext in self.SHP_SUFFIX  for ext in suffixes):
-                self.output.add_msg(f'One of the file does not have an extention included in the ESRI shapefile description ({", ".join(self.SHP_SUFFIX)})', 'error')
+                self.output.add_msg(cm.download.unknown_extention.format(", ".join(self.SHP_SUFFIX)), 'error')
                 return widget.toggle_loading()
             
         ######################################
@@ -114,10 +113,10 @@ class DownloadTile(sw.Tile):
         for file in myfiles:
         
             # create a path
-            path = Path(pm.get_down_dir()).joinpath(unidecode.unidecode(file['name']))
+            path = cp.down_dir.joinpath(unidecode.unidecode(file['name']))
     
             if path.is_file():
-                self.output.add_msg(f'File {path} already exists, skipping.', 'warning')
+                self.output.add_msg(cm.download.already_exist.format(path), 'warning')
                 break
     
             src = file['file_obj'] 
@@ -129,6 +128,6 @@ class DownloadTile(sw.Tile):
         if self.select_type.v_model == self.SELECT_TYPE[0]:
             path = path.stem + '.shp'
         
-        self.output.add_msg(f'Download complete in {path}', 'success')
+        self.output.add_msg(cm.download.complete.format(path), 'success')
     
         return widget.toggle_loading()

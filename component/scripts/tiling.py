@@ -7,30 +7,37 @@ from shapely.ops import unary_union
 from itertools import product
 import geopandas as gpd
 
-def set_grid(aoi, grid_size, grid_batch, output):
+from component.message import cm
+
+def set_grid(aoi, grid_batch, output):
     """compute a grid around a given aoi (ee.FeatureCollection)"""
     
-    # get the shape of the aoi in mercator proj 
+    # get the shape of the aoi in EPSG:4326 proj 
     aoi_json = geemap.ee_to_geojson(aoi)
     aoi_shp = unary_union([shape(feat['geometry']) for feat in aoi_json['features']])
-    aoi_gdf = gpd.GeoDataFrame({'geometry': [aoi_shp]}, crs="EPSG:4326").to_crs('EPSG:3857')
+    aoi_gdf = gpd.GeoDataFrame({'geometry': [aoi_shp]}, crs="EPSG:4326")
     
-    output.add_live_msg('Digest the selected AOI')
+    output.add_live_msg(cm.digest_aoi)
     
-    # extract the aoi shape in mercator projection 
+    # extract the aoi shape 
     aoi_shp_proj = aoi_gdf['geometry'][0]
     
-    # extract bounds from gdf 
-    min_lon, min_lat, max_lon, max_lat = aoi_gdf.total_bounds
 
-    # mercator is in metter so we change unit
-    buffer_size = grid_size * 1000
+    # the size is based on the planet grid size 
+    # the planet grid is composed of squared grid that split the world width in 2048 squares
+    diametre = 360/2048
+    radius = diametre/2
     
-    # compute the longitudes and latitudes top left corner coordinates
-    longitudes = np.arange(min_lon, max_lon, buffer_size)
-    latitudes = np.arange(min_lat, max_lat, buffer_size)
+    # compute the longitudes and latitudes for the whole world
+    longitudes = np.arange(-180, 180, diametre)
+    latitudes = np.arange(-90, 90, diametre)
     
-    output.add_live_msg('Building the grid')
+    # filter with the geometry bounds
+    min_lon, min_lat, max_lon, max_lat = aoi_gdf.total_bounds
+    longitudes = longitudes[(longitudes > (min_lon - radius)) & (longitudes < max_lon + radius)]
+    latitudes = latitudes[(latitudes > (min_lat - radius)) & (latitudes < max_lat + radius)]
+    
+    output.add_live_msg(cm.build_grid)
     
     #create the grid 
     points = []
@@ -41,14 +48,13 @@ def set_grid(aoi, grid_size, grid_batch, output):
         points.append(Point(coords[0], coords[1]))
         
         # add a batch number 
-        batch.append(int(i/grid_batch))
+        batch.append(i//grid_batch)
     
     # create a buffer grid in lat-long
-    grid = gpd.GeoDataFrame({'batch': batch, 'geometry':points}, crs='EPSG:3857') \
-        .buffer(buffer_size) \
+    grid = gpd.GeoDataFrame({'batch': batch, 'geometry':points}, crs='EPSG:4326') \
+        .buffer(diametre) \
         .envelope \
         .intersection(aoi_shp_proj) \
-        .to_crs('EPSG:4326')
     
     # filter empty geometries
     grid = grid[np.invert(grid.is_empty)]
@@ -56,7 +62,7 @@ def set_grid(aoi, grid_size, grid_batch, output):
     # convert gdp to GeoJson
     json_df = json.loads(grid.to_json())
     
-    output.add_live_msg('Grid build completed', 'success')
+    output.add_live_msg(cm.grid_complete, 'success')
     
     return geemap.geojson_to_ee(json_df)
 
