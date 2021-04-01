@@ -75,43 +75,43 @@ class TileTile(sw.Tile):
         if not self.output.check_input(grid_name, cm.no_name): return widget.toggle_loading()
         
         
-        try:
-            grid = cs.set_grid(aoi.get_aoi_ee(), grid_batch, self.output)
+        #try:
+        grid = cs.set_grid(aoi.get_aoi_ee(), grid_batch, grid_name, self.output)
             
-            # get exportation parameters 
-            folder = ee.data.getAssetRoots()[0]['id']
-            asset = os.path.join(folder, grid_name)
+        # get exportation parameters 
+        folder = ee.data.getAssetRoots()[0]['id']
+        asset = os.path.join(folder, grid_name)
         
-            # export
-            if not cs.isAsset(grid_name, folder):
-                task_config = {
-                    'collection': grid, 
-                    'description':grid_name,
-                    'assetId': asset
-                }
+        # export
+        if not cs.isAsset(grid_name, folder):
+            task_config = {
+                'collection': grid, 
+                'description':grid_name,
+                'assetId': asset
+            }
     
-                task = ee.batch.Export.table.toAsset(**task_config)
-                task.start()
-                gee.wait_for_completion(grid_name, self.output)
+            task = ee.batch.Export.table.toAsset(**task_config)
+            task.start()
+            gee.wait_for_completion(grid_name, self.output)
         
-            self.assetId = asset
+        self.assetId = asset
             
-            # remove the preview square from the map
-            for layer in self.m.layers:
-                if layer.name == 'preview square size':
-                    self.m.remove_layer(layer)
+        # remove the preview square from the map
+        for layer in self.m.layers:
+            if layer.name == 'preview square size':
+                self.m.remove_layer(layer)
         
-            # display the asset on the map 
-            self.m.addLayer(
-                ee.FeatureCollection(asset), 
-                {'color': v.theme.themes.dark.accent}, 
-                cm.tile.grid_layer
-            )
+        # display the asset on the map 
+        self.m.addLayer(
+            ee.FeatureCollection(asset), 
+            {'color': v.theme.themes.dark.accent}, 
+            cm.tile.grid_layer
+        )
         
-            self.io.assetId = cs.display_asset(self.output, asset)
+        self.io.assetId = cs.display_asset(self.output, asset)
             
-        except Exception as e: 
-            self.output.add_live_msg(str(e), 'error') 
+        #except Exception as e: 
+        #    self.output.add_live_msg(str(e), 'error') 
             
         # toggle the loading
         widget.toggle_loading()

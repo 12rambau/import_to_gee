@@ -1,70 +1,106 @@
 import json
+from itertools import product
 
 import numpy as np
+import decimal as d
+
 import geemap
-from shapely.geometry import shape, Point
+from shapely import geometry as sg
 from shapely.ops import unary_union
-from itertools import product
 import geopandas as gpd
+from pyproj import CRS, Transformer
+from pathlib import Path
 
 from component.message import cm
+from component import parameter as cp
 
-def set_grid(aoi, grid_batch, output):
-    """compute a grid around a given aoi (ee.FeatureCollection)"""
+d.getcontext().prec = 15
+
+def set_grid(aoi, grid_batch, grid_name, output):
+    """compute a grid around a given aoi (ee.FeatureCollection) that fits the Planet Lab requirements"""
     
     # get the shape of the aoi in EPSG:4326 proj 
     aoi_json = geemap.ee_to_geojson(aoi)
-    aoi_shp = unary_union([shape(feat['geometry']) for feat in aoi_json['features']])
-    aoi_gdf = gpd.GeoDataFrame({'geometry': [aoi_shp]}, crs="EPSG:4326")
+    aoi_shp = unary_union([sg.shape(feat['geometry']) for feat in aoi_json['features']])
+    aoi_gdf = gpd.GeoDataFrame({'geometry': [aoi_shp]}, crs="EPSG:4326").to_crs('EPSG:3857')
     
     output.add_live_msg(cm.digest_aoi)
     
     # extract the aoi shape 
     aoi_shp_proj = aoi_gdf['geometry'][0]
     
-
-    # the size is based on the planet grid size 
-    # the planet grid is composed of squared grid that split the world width in 2048 squares
-    diametre = 360/2048
-    radius = diametre/2
+    # retreive the bounding box
+    aoi_bb = sg.box(*aoi_gdf.total_bounds)
+    aoi_bb.bounds
     
-    # compute the longitudes and latitudes for the whole world
-    longitudes = np.arange(-180, 180, diametre)
-    latitudes = np.arange(-90, 90, diametre)
+    # compute the longitude and latitude in the apropriate CRS
+    crs_4326 = CRS.from_epsg(4326)
+    crs_3857 = CRS.from_epsg(3857)
+    crs_min_x, crs_min_y, crs_max_x, crs_max_y = crs_3857.area_of_use.bounds
+
+    proj = Transformer.from_crs(4326, 3857, always_xy=True)
+    bl = proj.transform(crs_min_x, crs_min_y)
+    tr = proj.transform(crs_max_x, crs_max_y)
+
+    # the planet grid is constructing a 2048x2048 grid of SQUARES. 
+    # The latitude extends is bigger (20048966.10m VS 20026376.39) so to ensure the "squariness"
+    # Planet lab have based the numerotation and extends of it square grid on the longitude only. 
+    # the extreme -90 and +90 band it thus exlucded but there are no forest there so we don't care
+    longitudes = np.linspace(bl[0], tr[0], 2048+1)
+
+    # the planet grid size cut the world in 248 squares vertically and horizontally
+    box_size = (tr[0]-bl[0])/2048
+
     
     # filter with the geometry bounds
     min_lon, min_lat, max_lon, max_lat = aoi_gdf.total_bounds
-    longitudes = longitudes[(longitudes > (min_lon - radius)) & (longitudes < max_lon + radius)]
-    latitudes = latitudes[(latitudes > (min_lat - radius)) & (latitudes < max_lat + radius)]
+
+    # filter lon and lat 
+    lon_filter = longitudes[(longitudes > (min_lon - box_size)) & (longitudes < max_lon + box_size)]
+    lat_filter = longitudes[(longitudes > (min_lat - box_size)) & (longitudes < max_lat + box_size)]
+
+    # get the index offset 
+    x_offset = np.nonzero(longitudes == lon_filter[0])[0][0]
+    y_offset = np.nonzero(longitudes == lat_filter[0])[0][0]
     
     output.add_live_msg(cm.build_grid)
     
-    #create the grid 
-    points = []
+    # create the grid
     batch = []
-    for i, coords in enumerate(product(longitudes, latitudes)):
-        
-        # create grid geometry 
-        points.append(Point(coords[0], coords[1]))
-        
-        # add a batch number 
-        batch.append(i//grid_batch)
+    x = []
+    y = []
+    names = []
+    squares = []
+    for i, coords in enumerate(product(range(len(lon_filter)-1), range(len(lat_filter)-1))):
     
+        # get the x and y index 
+        ix = coords[0]
+        iy = coords[1]
+        
+        # fill the grid values
+        batch.append(i//grid_batch)   
+        x.append(ix + x_offset)
+        y.append(iy + y_offset)
+        names.append(f'L15-{x[-1]:4d}E-{y[-1]:4d}N.tif')
+        squares.append(sg.box(lon_filter[ix], lat_filter[iy], lon_filter[ix+1], lat_filter[iy+1]))
+        
     # create a buffer grid in lat-long
-    grid = gpd.GeoDataFrame({'batch': batch, 'geometry':points}, crs='EPSG:4326') \
-        .buffer(diametre) \
-        .envelope \
-        .intersection(aoi_shp_proj) \
+    grid = gpd.GeoDataFrame({'batch': batch, 'x':x, 'y':y, 'names':names, 'geometry':squares}, crs='EPSG:3857')
+
+    # cut the grid to the aoi extends 
+    mask = grid.intersects(aoi_shp_proj)
+    grid = grid.loc[mask]
     
-    # filter empty geometries
-    grid = grid[np.invert(grid.is_empty)]
+    # project back to 4326
+    grid = grid.to_crs('EPSG:4326')
     
-    # convert gdp to GeoJson
-    json_df = json.loads(grid.to_json())
+    # export the grid as a json file 
+    path = cp.down_dir.joinpath(f'{grid_name}.geojson')
+    grid.to_file(path, driver='GeoJSON')
     
     output.add_live_msg(cm.grid_complete, 'success')
     
-    return geemap.geojson_to_ee(json_df)
+    return geemap.geojson_to_ee(json.loads(grid.to_json()))
 
 def preview_square(geometry, grid_size):
     
