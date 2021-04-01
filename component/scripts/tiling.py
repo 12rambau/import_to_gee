@@ -34,7 +34,6 @@ def set_grid(aoi, grid_batch, grid_name, output):
     aoi_bb.bounds
     
     # compute the longitude and latitude in the apropriate CRS
-    # Here I suppose it's 3857 but it's not working so I'll need to change it 
     crs_4326 = CRS.from_epsg(4326)
     crs_3857 = CRS.from_epsg(3857)
     crs_min_x, crs_min_y, crs_max_x, crs_max_y = crs_3857.area_of_use.bounds
@@ -43,10 +42,13 @@ def set_grid(aoi, grid_batch, grid_name, output):
     bl = proj.transform(crs_min_x, crs_min_y)
     tr = proj.transform(crs_max_x, crs_max_y)
 
+    # the planet grid is constructing a 2048x2048 grid of SQUARES. 
+    # The latitude extends is bigger (20048966.10m VS 20026376.39) so to ensure the "squariness"
+    # Planet lab have based the numerotation and extends of it square grid on the longitude only. 
+    # the extreme -90 and +90 band it thus exlucded but there are no forest there so we don't care
     longitudes = np.linspace(bl[0], tr[0], 2048+1)
-    latitudes = np.linspace(bl[1], tr[1], 2048+1)
 
-    # the planet grid sizez cut the world in 248 squares vertically and horizontally
+    # the planet grid size cut the world in 248 squares vertically and horizontally
     box_size = (tr[0]-bl[0])/2048
 
     
@@ -55,11 +57,11 @@ def set_grid(aoi, grid_batch, grid_name, output):
 
     # filter lon and lat 
     lon_filter = longitudes[(longitudes > (min_lon - box_size)) & (longitudes < max_lon + box_size)]
-    lat_filter = latitudes[(latitudes > (min_lat - box_size)) & (latitudes < max_lat + box_size)]
+    lat_filter = longitudes[(longitudes > (min_lat - box_size)) & (longitudes < max_lat + box_size)]
 
     # get the index offset 
     x_offset = np.nonzero(longitudes == lon_filter[0])[0][0]
-    y_offset = np.nonzero(latitudes == lat_filter[0])[0][0]
+    y_offset = np.nonzero(longitudes == lat_filter[0])[0][0]
     
     output.add_live_msg(cm.build_grid)
     
