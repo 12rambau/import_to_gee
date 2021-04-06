@@ -7,4 +7,4 @@ Vector file manager
 
 .. tip::
 
-    Please open an issue on their repository : https://github.com/openforis/import-to-ee/issues/new
+    Please open an issue on their repository : https://github.com/openforis/import_to_gee/issues/new
