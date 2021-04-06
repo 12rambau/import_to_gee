@@ -1,5 +1,5 @@
-Clip time series
-================
+Vector file manager
+===================
 
 .. warning::
 
@@ -7,4 +7,4 @@ Clip time series
 
 .. tip::
 
-    Please open an issue on their repository : https://github.com/openforis/clip-time-series/issues/new
+    Please open an issue on their repository : https://github.com/openforis/import-to-ee/issues/new
