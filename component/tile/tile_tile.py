@@ -4,7 +4,10 @@ from types import SimpleNamespace
 import ipyvuetify as v
 from sepal_ui import sepalwidgets as sw
 from sepal_ui.scripts import gee
+from sepal_ui.scripts import utils as su
+from sepal_ui import color
 import ee
+from traitlets import Int
 
 from component import scripts as cs
 from component.message import cm
@@ -13,7 +16,9 @@ ee.Initialize()
 
 class TileTile(sw.Tile):
     
-    def __init__(self, m, aoi_io):
+    updated = Int(0).tag(sync=True)
+    
+    def __init__(self, m, aoi_model):
         
         # to store the final asset 
         self.assetId = None 
@@ -21,8 +26,8 @@ class TileTile(sw.Tile):
         # the map to display the final tile
         self.m = m
         
-        #store the aoi_io 
-        self.aoi_io = aoi_io
+        #store the aoi_model 
+        self.aoi_model = aoi_model
         
         # inputs 
         self.grid_name = v.TextField(
@@ -37,53 +42,44 @@ class TileTile(sw.Tile):
             type = 'number'
         )
         
-        self.btn = sw.Btn(cm.tile.btn, icon = 'mdi-check')
-        
-        self.output = sw.Alert()
-        
         # the aoi default btn is not set to btn anymore (to avoid conflict with the standard btn)
         # to mimic its behaviour in the dialog interface we wire 2 attribute btn and aoi_btn to the same Btn object
-        self.aoi_select_btn = self.btn
-        self.aoi_output = self.output
-        self.io = SimpleNamespace(assetId=None)
+        self.model = SimpleNamespace(asset_name=None)
         
         super().__init__(
             'tile_widget',
             cm.tile.title,
-            btn = self.btn,
             inputs = [self.batch_size, self.grid_name],
-            output = self.output
+            alert = sw.Alert(),
+            btn = sw.Btn(cm.tile.btn, icon = 'mdi-check')
         )
         
         # link the component together 
         self.btn.on_event('click', self.create_grid)
         self.batch_size.observe(self.write_name, 'v_model')
         
+    @su.loading_button(debug=False)
     def create_grid(self, widget, data, event):
         
-        # toggle the btn 
-        widget.toggle_loading()
-        
         # read the data 
-        aoi = self.aoi_io 
+        aoi = self.aoi_model 
         grid_name = self.grid_name.v_model
         grid_batch = int(self.batch_size.v_model)
         
         #check the vars 
-        if not self.output.check_input(aoi.get_aoi_name(), cm.no_aoi): return widget.toggle_loading()
-        if not self.output.check_input(grid_batch, cm.no_size): return widget.toggle_loading()
-        if not self.output.check_input(grid_name, cm.no_name): return widget.toggle_loading()
+        if not self.alert.check_input(aoi.name, cm.no_aoi): return 
+        if not self.alert.check_input(grid_batch, cm.no_size): return 
+        if not self.alert.check_input(grid_name, cm.no_name): return
         
-        
-        #try:
-        grid = cs.set_grid(aoi.get_aoi_ee(), grid_batch, grid_name, self.output)
+        grid = cs.set_grid(aoi.gdf, grid_batch, grid_name, self.alert)
             
         # get exportation parameters 
         folder = ee.data.getAssetRoots()[0]['id']
         asset = os.path.join(folder, grid_name)
         
         # export
-        if not cs.isAsset(grid_name, folder):
+        if not gee.is_asset(grid_name, folder):
+            
             task_config = {
                 'collection': grid, 
                 'description':grid_name,
@@ -92,7 +88,7 @@ class TileTile(sw.Tile):
     
             task = ee.batch.Export.table.toAsset(**task_config)
             task.start()
-            gee.wait_for_completion(grid_name, self.output)
+            gee.wait_for_completion(grid_name, self.alert)
         
         self.assetId = asset
             
@@ -104,24 +100,20 @@ class TileTile(sw.Tile):
         # display the asset on the map 
         self.m.addLayer(
             ee.FeatureCollection(asset), 
-            {'color': v.theme.themes.dark.accent}, 
+            {'color': color.accent}, 
             cm.tile.grid_layer
         )
         
-        self.io.assetId = cs.display_asset(self.output, asset)
-            
-        #except Exception as e: 
-        #    self.output.add_live_msg(str(e), 'error') 
-            
-        # toggle the loading
-        widget.toggle_loading()
+        self.model.asset_name = cs.display_asset(self.alert, asset)
+        
+        self.updated += 1
         
         return
         
     def write_name(self, change):
         
         # read the inputs 
-        aoi_name = self.aoi_io.get_aoi_name()
+        aoi_name = self.aoi_model.name
         grid_batch = int(self.batch_size.v_model) if self.batch_size.v_model else 0
         
         name = f'{aoi_name}_Grid_{grid_batch}' if aoi_name else None
