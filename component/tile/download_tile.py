@@ -32,7 +32,7 @@ class DownloadTile(sw.Tile):
         )
         
         super().__init__(
-            'aoi_widget',
+            'aoi_tile',
             cm.download.title,
             inputs = [self.select_type, self.input_file],
             alert = sw.Alert(),
