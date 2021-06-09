@@ -1,4 +1,4 @@
-# File transfer management
+# Vector file manager
 
 ## About 
 This module is a 2 step wrapper to upload AOI to Google Earth Engine

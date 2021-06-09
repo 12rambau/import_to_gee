@@ -20,14 +20,9 @@ def set_grid(aoi, grid_batch, grid_name, output):
     """compute a grid around a given aoi (ee.FeatureCollection) that fits the Planet Lab requirements"""
     
     # get the shape of the aoi in EPSG:4326 proj 
-    aoi_json = geemap.ee_to_geojson(aoi)
-    aoi_shp = unary_union([sg.shape(feat['geometry']) for feat in aoi_json['features']])
-    aoi_gdf = gpd.GeoDataFrame({'geometry': [aoi_shp]}, crs="EPSG:4326").to_crs('EPSG:3857')
+    aoi_gdf = aoi.to_crs('EPSG:3857')
     
     output.add_live_msg(cm.digest_aoi)
-    
-    # extract the aoi shape 
-    aoi_shp_proj = aoi_gdf['geometry'][0]
     
     # retreive the bounding box
     aoi_bb = sg.box(*aoi_gdf.total_bounds)
@@ -88,7 +83,7 @@ def set_grid(aoi, grid_batch, grid_name, output):
     grid = gpd.GeoDataFrame({'batch': batch, 'x':x, 'y':y, 'names':names, 'geometry':squares}, crs='EPSG:3857')
 
     # cut the grid to the aoi extends 
-    mask = grid.intersects(aoi_shp_proj)
+    mask = grid.intersects(aoi_gdf.dissolve()['geometry'][0])
     grid = grid.loc[mask]
     
     # project back to 4326
@@ -100,7 +95,7 @@ def set_grid(aoi, grid_batch, grid_name, output):
     
     output.add_live_msg(cm.grid_complete, 'success')
     
-    return geemap.geojson_to_ee(json.loads(grid.to_json()))
+    return geemap.geojson_to_ee(grid.__geo_interface__)
 
 def preview_square(geometry, grid_size):
     
@@ -114,10 +109,7 @@ def preview_square(geometry, grid_size):
         .envelope \
         .to_crs('EPSG:4326')
     
-    # convert gpd to GeoJson
-    json_df = json.loads(square.to_json())
-    
-    return geemap.geojson_to_ee(json_df)
+    return geemap.geojson_to_ee(square.__geo_interface__)
     
     
     

@@ -21,10 +21,6 @@ class DownloadTile(sw.Tile):
     
     def __init__(self):
         
-        self.output = sw.Alert()#.add_msg('import your file')
-        
-        self.btn = sw.Btn(cm.download.import_btn, icon = 'mdi-check', class_='mt-4')
-        
         self.select_type = v.Select(
             label= cm.download.select_type, 
             items= self.SELECT_TYPE,
@@ -36,11 +32,11 @@ class DownloadTile(sw.Tile):
         )
         
         super().__init__(
-            'aoi_widget',
+            'aoi_tile',
             cm.download.title,
-            btn = self.btn,
             inputs = [self.select_type, self.input_file],
-            output = self.output
+            alert = sw.Alert(),
+            btn = sw.Btn(cm.download.import_btn, icon = 'mdi-check', class_='mt-4')
         )
         
         self.select_type.observe(self.on_type_change, 'v_model')
@@ -63,18 +59,16 @@ class DownloadTile(sw.Tile):
         
         return
     
+    @su.loading_button(debug=False)
     def load_file(self, widget, data, event):
     
-        # toggle the btn
-        widget.toggle_loading()
-    
-        self.output.add_msg(cm.download.start)
+        self.alert.add_msg(cm.download.start)
     
         # load the files
         myfiles = self.input_file.get_files()
     
         # test that the file is not empty 
-        if not self.output.check_input(myfiles, cm.download.no_file): return widget.toggle_loading()
+        if not self.alert.check_input(myfiles, cm.download.no_file): return
         
         ####################################
         ##      test the file sended      ##
@@ -84,27 +78,25 @@ class DownloadTile(sw.Tile):
         if self.select_type.v_model == self.SELECT_TYPE[1]:
             
             if Path(myfiles[0]['name']).suffix != '.csv':
-                self.output.add_msg(cm.download.not_csv, 'error')
-                return widget.toggle_loading()
+                self.alert.add_msg(cm.download.not_csv, 'error')
+                return
             
         # shp type
         if self.select_type.v_model == self.SELECT_TYPE[0]:
             
-            
-            
             name = set([Path(f['name']).stem for f in myfiles])
             if len(name) > 1:
-                self.output.add_msg(cm.download.naming_bug, 'error')
-                return widget.toggle_loading()
+                self.alert.add_msg(cm.download.naming_bug, 'error')
+                return 
             
             suffixes = [Path(f['name']).suffix for f in myfiles]
             if not all(ext in suffixes  for ext in self.SHP_SUFFIX[:3]):
-                self.output.add_msg(cm.download.missing_files.format(", ".join(self.SHP_SUFFIX[:3])), 'error')
-                return widget.toggle_loading()
+                self.alert.add_msg(cm.download.missing_files.format(", ".join(self.SHP_SUFFIX[:3])), 'error')
+                return 
             
             if not all(ext in self.SHP_SUFFIX  for ext in suffixes):
-                self.output.add_msg(cm.download.unknown_extention.format(", ".join(self.SHP_SUFFIX)), 'error')
-                return widget.toggle_loading()
+                self.alert.add_msg(cm.download.unknown_extention.format(", ".join(self.SHP_SUFFIX)), 'error')
+                return 
             
         ######################################
         ##      download all the files      ##
@@ -116,7 +108,7 @@ class DownloadTile(sw.Tile):
             path = cp.down_dir.joinpath(unidecode.unidecode(file['name']))
     
             if path.is_file():
-                self.output.add_msg(cm.download.already_exist.format(path), 'warning')
+                self.alert.add_msg(cm.download.already_exist.format(path), 'warning')
                 break
     
             src = file['file_obj'] 
@@ -128,6 +120,6 @@ class DownloadTile(sw.Tile):
         if self.select_type.v_model == self.SELECT_TYPE[0]:
             path = path.stem + '.shp'
         
-        self.output.add_msg(cm.download.complete.format(path), 'success')
+        self.alert.add_msg(cm.download.complete.format(path), 'success')
     
-        return widget.toggle_loading()
+        return

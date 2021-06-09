@@ -37,25 +37,14 @@ class LinkDialog(sw.SepalWidget, v.Dialog):
             children = [self.card]
         )
         
-        # self.link.on_event('click', self.select_all)
-        self.tile.aoi_select_btn.observe(self.fire_dialog, 'loading')
-    
-    # the pyperclip method does not work with SEPAL
-    #def select_all(self, widget, data, event):
-    #    
-    #    # copy the data to clipboard
-    #    pyperclip.copy(self.link)
-    #    
-    #    # select all the link to prevent pyperclip failures
-    #    
-    #    return
+        self.tile.observe(self.fire_dialog, 'updated')
     
     def fire_dialog(self, link):
         
         # the toggle btn has changed let's see if it's for a good reason
-        if self.tile.aoi_output.type == 'success':
+        if self.tile.alert.type == 'success':
         
             self.value = True
-            self.link.v_model = self.tile.io.assetId.replace('projects/earthengine-legacy/assets/', '')
+            self.link.v_model = self.tile.model.asset_name.replace('projects/earthengine-legacy/assets/', '')
             
         return
