@@ -35,4 +35,4 @@ The second drawer will allow you to create a grid on top of any AOI. THe grid is
     
 an extra column is added to the grid called "batch" you can select the number of cell you want to add to each batch. The naming will be set automatically according to your AOI name and the batch number. 
 
-By validating, yuou will create ageojson file that will live in :code:`module_results/aoi/<asset_name>.geojson` and launch the creation of the same grid in your GEE assets.
+By validating, you will create a geojson file that will live in :code:`module_results/aoi/<asset_name>.geojson` and launch the creation of the same grid in your GEE assets.
