@@ -38,7 +38,7 @@
     },
     "tile": {
         "asset_lbl": "Asset name",
-        "nb_batch_lbl": "Select number of tiles in a batch",
+        "nb_batch_lbl": "Select batch size",
         "btn": "Tile the AOI",
         "title": "Tiling interface",
         "grid_layer": "grid"
