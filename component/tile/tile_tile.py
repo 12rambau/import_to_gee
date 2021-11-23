@@ -38,8 +38,7 @@ class TileTile(sw.Tile):
         self.batch_size = sw.NumberField(
             label = cm.tile.nb_batch_lbl,
             v_model=1,
-            max_=100,
-            type = 'number'
+            max_=100
         )
         
         # the aoi default btn is not set to btn anymore (to avoid conflict with the standard btn)
@@ -78,7 +77,7 @@ class TileTile(sw.Tile):
         asset = os.path.join(folder, grid_name)
         
         # export
-        if not gee.is_asset(grid_name, folder):
+        if not gee.is_asset(asset, folder):
             
             task_config = {
                 'collection': grid, 

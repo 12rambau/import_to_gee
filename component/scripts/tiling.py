@@ -60,20 +60,15 @@ def set_grid(aoi, grid_batch, grid_name, output):
     
     output.add_live_msg(cm.build_grid)
     
+    # count the number of batch cell in width 
+    batch_width = (len(lat_filter)-1) // grid_batch
     # create the grid
-    batch = []
-    x = []
-    y = []
-    names = []
-    squares = []
-    for i, coords in enumerate(product(range(len(lon_filter)-1), range(len(lat_filter)-1))):
-    
-        # get the x and y index 
-        ix = coords[0]
-        iy = coords[1]
+    batch, x, y, names, squares = [], [], [], [], []
+    for ix, iy in product(range(len(lon_filter)-1), range(len(lat_filter)-1)):
         
         # fill the grid values
-        batch.append(i//grid_batch)   
+        batch_id = (ix // grid_batch) * (batch_width + 1) + (iy // grid_batch)
+        batch.append(batch_id)   
         x.append(ix + x_offset)
         y.append(iy + y_offset)
         names.append(f'L15-{x[-1]:4d}E-{y[-1]:4d}N.tif')
