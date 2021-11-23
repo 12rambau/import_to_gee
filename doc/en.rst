@@ -36,3 +36,4 @@ The second drawer will allow you to create a grid on top of any AOI. THe grid is
 An extra column is added to the grid called "batch" you can select the size of the batch by changing the width of the batch usin the initial grid cell as unit. E.g. by setting :guilabel:`grid size` to 10 you'll create grid batch of 10x10 cells. The naming will be set automatically according to your AOI name and the batch size. 
 
 By validating, you will create a geojson file that will live in :code:`module_results/aoi/<asset_name>.geojson` and launch the creation of the same grid in your GEE assets.
+
