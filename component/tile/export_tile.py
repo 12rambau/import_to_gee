@@ -34,7 +34,7 @@ class ExportTile(aoi.AoiTile):
             self.view.model.export_to_asset()
 
         # update the message
-        self.view.alert.add_msg("The AOI have been exported to GEE.", "success")
+        self.view.alert.add_msg(cm.to_gee.success, "success")
 
         self.ready += 1
 

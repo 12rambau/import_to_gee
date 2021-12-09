@@ -21,7 +21,8 @@
         "link_lbl": "Link"
     },
     "to_gee": {
-        "title": "Convert to Google Earth Engine asset"
+        "title": "Convert to Google Earth Engine asset",
+        "success": "The AOI have been exported to GEE"
     },
     "download": {
         "import_btn": "Import",
