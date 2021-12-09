@@ -33,15 +33,15 @@ class LinkDialog(sw.SepalWidget, v.Dialog):
 
         super().__init__(value=False, max_width="600px", children=[self.card])
 
-        self.tile.observe(self.fire_dialog, "updated")
+        self.tile.observe(self.fire_dialog, "ready")
 
     def fire_dialog(self, link):
 
         # the toggle btn has changed let's see if it's for a good reason
-        if self.tile.alert.type == "success":
+        if self.tile.view.alert.type == "success":
 
             self.value = True
-            self.link.v_model = self.tile.model.asset_name.replace(
+            self.link.v_model = self.tile.view.model.dst_asset_id.replace(
                 "projects/earthengine-legacy/assets/", ""
             )
 

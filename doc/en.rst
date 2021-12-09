@@ -16,9 +16,10 @@ Using the first avalaibale tile you can upload any file from your local computer
 
 Once the file is available in your SEPAL folders use it in the AOI selector. This selector have been customized to only allow selection through: 
 
-- **draw a shape**: manually draw a shape on the map 
-- **Upload file**: Use a shapefile as an asset
-- **Use point file**: Use a :code:`.csv` file as an aoi asset. Point file need to have at least 3 columns (id, lattitude and longitude) but you can use any custom names.
+- :guilabel:`admin level 2`: select an administrative level 2
+- :guilabel:`draw a shape`: manually draw a shape on the map 
+- :guilabel:`Upload file`: Use a shapefile as an asset
+- :guilabel:`Use point file`: Use a :code:`.csv` file as an aoi asset. Point file need to have at least 3 columns (id, lattitude and longitude) but you can use any custom names
 
 By validating the selection a task will be launched on GEE to transform your table into a GEE asset. please go to your earthengine task list if you want to monitor the evolution of your upload.
 
