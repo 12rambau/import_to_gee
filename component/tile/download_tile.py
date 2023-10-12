@@ -11,14 +11,12 @@ from component.message import cm
 
 
 class DownloadTile(sw.Tile):
-
     SELECT_TYPE = ["Shape file (.shp, .shx, .dbf, .prj)", "Table file (.csv)"]
 
     # the first 3 one are compulsory
     SHP_SUFFIX = [".shp", ".dbf", ".shx", ".cpg", ".prj", ".sbn", ".sbx"]
 
     def __init__(self):
-
         self.select_type = v.Select(
             label=cm.download.select_type,
             items=self.SELECT_TYPE,
@@ -41,7 +39,6 @@ class DownloadTile(sw.Tile):
         self.btn.on_event("click", self.load_file)
 
     def on_type_change(self, change):
-
         self.input_file.clear()
         self.input_file.disabled = False
 
@@ -58,7 +55,6 @@ class DownloadTile(sw.Tile):
 
     @su.loading_button(debug=False)
     def load_file(self, widget, data, event):
-
         self.alert.add_msg(cm.download.start)
 
         # load the files
@@ -74,14 +70,12 @@ class DownloadTile(sw.Tile):
 
         # table type
         if self.select_type.v_model == self.SELECT_TYPE[1]:
-
             if Path(myfiles[0]["name"]).suffix != ".csv":
                 self.alert.add_msg(cm.download.not_csv, "error")
                 return
 
         # shp type
         if self.select_type.v_model == self.SELECT_TYPE[0]:
-
             name = set([Path(f["name"]).stem for f in myfiles])
             if len(name) > 1:
                 self.alert.add_msg(cm.download.naming_bug, "error")
@@ -107,7 +101,6 @@ class DownloadTile(sw.Tile):
         ######################################
 
         for file in myfiles:
-
             # create a path
             path = cp.down_dir.joinpath(unidecode.unidecode(file["name"]))
 
@@ -121,7 +114,7 @@ class DownloadTile(sw.Tile):
                 dst.write(content)
 
         if self.select_type.v_model == self.SELECT_TYPE[0]:
-            path = path.stem + ".shp"
+            path = path.with_suffix(".shp")
 
         self.alert.add_msg(cm.download.complete.format(path), "success")
 
