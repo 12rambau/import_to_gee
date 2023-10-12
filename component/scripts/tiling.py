@@ -4,7 +4,7 @@ from itertools import product
 import numpy as np
 import decimal as d
 
-import geemap
+from sepal_ui.scripts.utils import geojson_to_ee
 from shapely import geometry as sg
 from shapely.ops import unary_union
 import geopandas as gpd
@@ -69,7 +69,6 @@ def set_grid(aoi, grid_batch, grid_name, output):
     # create the grid
     batch, x, y, names, squares = [], [], [], [], []
     for ix, iy in product(range(len(lon_filter) - 1), range(len(lat_filter) - 1)):
-
         # fill the grid values
         batch_id = (ix // grid_batch) * (batch_width + 1) + (iy // grid_batch)
         batch.append(batch_id)
@@ -101,11 +100,10 @@ def set_grid(aoi, grid_batch, grid_name, output):
 
     output.add_live_msg(cm.grid_complete, "success")
 
-    return geemap.geojson_to_ee(grid.__geo_interface__)
+    return geojson_to_ee(grid.__geo_interface__)
 
 
 def preview_square(geometry, grid_size):
-
     # get the center of the aoi
     center = geometry.centroid().getInfo()["coordinates"]
 
@@ -117,4 +115,4 @@ def preview_square(geometry, grid_size):
         .envelope.to_crs("EPSG:4326")
     )
 
-    return geemap.geojson_to_ee(square.__geo_interface__)
+    return geojson_to_ee(square.__geo_interface__)
