@@ -1,3 +1,6 @@
+[sepal]
+entry-point = "ui.ipynb"
+
 [project]
 version = "0.0.1"
 
