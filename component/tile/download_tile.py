@@ -53,7 +53,7 @@ class DownloadTile(sw.Tile):
 
         return
 
-    @su.loading_button(debug=False)
+    @su.loading_button()
     def load_file(self, widget, data, event):
         self.alert.add_msg(cm.download.start)
 
