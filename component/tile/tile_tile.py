@@ -16,11 +16,9 @@ ee.Initialize()
 
 
 class TileTile(sw.Tile):
-
     updated = Int(0).tag(sync=True)
 
     def __init__(self, m, aoi_model):
-
         # to store the final asset
         self.assetId = None
 
@@ -53,9 +51,8 @@ class TileTile(sw.Tile):
         self.btn.on_event("click", self.create_grid)
         self.batch_size.observe(self.write_name, "v_model")
 
-    @su.loading_button(debug=False)
+    @su.loading_button()
     def create_grid(self, widget, data, event):
-
         # read the data
         aoi = self.aoi_model
         grid_name = self.grid_name.v_model
@@ -77,7 +74,6 @@ class TileTile(sw.Tile):
 
         # export
         if not gee.is_asset(asset, folder):
-
             task_config = {
                 "collection": grid,
                 "description": grid_name,
@@ -107,7 +103,6 @@ class TileTile(sw.Tile):
         return
 
     def write_name(self, change):
-
         # read the inputs
         aoi_name = self.aoi_model.name
         grid_batch = int(self.batch_size.v_model) if self.batch_size.v_model else 0

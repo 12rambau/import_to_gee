@@ -35,7 +35,7 @@
         "missing_files": "The minimum import requires: {}",
         "unknown_extention": "One of the file does not have an extention included in the ESRI shapefile description ({})",
         "already_exist": "File {} already exists, skipping.",
-        "complete": "Download complete in {}"
+        "complete": "Importation complete. You can find the file in {}."
     },
     "tile": {
         "asset_lbl": "Asset name",
