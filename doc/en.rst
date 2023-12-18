@@ -1,5 +1,6 @@
 Vector file manager
 ===================
+*Upload and transform files into assets in GEE*
 
 Designed on top of the interactive framework, `sepal_ui <https://github.com/12rambau/sepal_ui>`_, this module allows users to: 
 
