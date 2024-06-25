@@ -1,6 +1,6 @@
 wheel
 voila
-earthengine-api
+"earthengine-api<0.1.401"
 
 # Fixes authentication process
 git+https://github.com/12rambau/sepal_ui.git@sepal_pre_release
@@ -11,3 +11,6 @@ numpy
 pyperclip
 Shapely
 Unidecode
+
+
+# Rebuild the environment

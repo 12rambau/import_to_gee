@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from types import SimpleNamespace
 
 import ipyvuetify as v
@@ -11,8 +12,6 @@ from traitlets import Int
 
 from component import scripts as cs
 from component.message import cm
-
-ee.Initialize()
 
 
 class TileTile(sw.Tile):
@@ -69,7 +68,7 @@ class TileTile(sw.Tile):
         grid = cs.set_grid(aoi.gdf, grid_batch, grid_name, self.alert)
 
         # get exportation parameters
-        folder = ee.data.getAssetRoots()[0]["id"]
+        folder = Path(f"projects/{ee.data._cloud_api_user_project}/assets/")
         asset = os.path.join(folder, grid_name)
 
         # export
